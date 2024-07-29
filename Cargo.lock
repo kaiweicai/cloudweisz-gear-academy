@@ -5056,8 +5056,16 @@ dependencies = [
  "gear-wasm-builder",
  "gstd",
  "gtest",
- "template-io",
+ "session-io",
  "tokio",
+]
+
+[[package]]
+name = "session-io"
+version = "0.1.0"
+dependencies = [
+ "gmeta",
+ "gstd",
 ]
 
 [[package]]
@@ -6039,14 +6047,6 @@ dependencies = [
  "fastrand 2.0.2",
  "rustix 0.38.34",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "template-io"
-version = "0.1.0"
-dependencies = [
- "gmeta",
- "gstd",
 ]
 
 [[package]]
@@ -7478,8 +7478,16 @@ dependencies = [
  "gear-wasm-builder",
  "gstd",
  "gtest",
- "template-io",
  "tokio",
+ "wordle-io",
+]
+
+[[package]]
+name = "wordle-io"
+version = "0.1.0"
+dependencies = [
+ "gmeta",
+ "gstd",
 ]
 
 [[package]]

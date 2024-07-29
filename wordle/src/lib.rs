@@ -1,7 +1,7 @@
 #![no_std]
 
 use gstd::{collections::HashMap, msg, prelude::*, ActorId, exec};
-use template_io::*;
+use wordle_io::*;
 
 static mut WORDLE: Option<Wordle> = None;
 

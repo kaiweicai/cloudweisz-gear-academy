@@ -1,5 +1,5 @@
 [package]
-name = "template-io"
+name = "wordle-io"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true

@@ -31,7 +31,7 @@ impl Metadata for WordleMetadata {
 
 pub type State = Vec<(ActorId, u128)>;
 
-#[derive(Encode, Decode, TypeInfo)]
+#[derive(Encode, Decode, TypeInfo,Clone)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]pub enum Action {
     StartGame {
@@ -44,7 +44,7 @@ pub type State = Vec<(ActorId, u128)>;
 }
 
 
-#[derive(Encode, Decode, TypeInfo)]
+#[derive(Encode, Decode, TypeInfo,Clone)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
 pub enum Event {
