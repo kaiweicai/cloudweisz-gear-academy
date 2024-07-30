@@ -36,7 +36,8 @@ pub type State = Vec<(ActorId, u128)>;
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
 pub struct GameSessionInit{
-    pub wordle_address:ActorId
+    pub wordle_address:ActorId,
+    pub max_play_times:u32
 }
 
 #[derive(Encode, Decode, TypeInfo,Clone)]

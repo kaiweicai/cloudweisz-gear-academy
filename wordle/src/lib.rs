@@ -1,6 +1,6 @@
 #![no_std]
 
-use gstd::{collections::HashMap, msg, prelude::*, ActorId, exec};
+use gstd::{collections::HashMap, msg, prelude::*, ActorId, exec, debug};
 use wordle_io::*;
 
 static mut WORDLE: Option<Wordle> = None;
@@ -8,7 +8,7 @@ static mut WORDLE: Option<Wordle> = None;
 const BANK_OF_WORDS:[&str;3] = ["house", "human", "horse"];
 
 pub struct Wordle {
-    games: HashMap<ActorId, String>,
+    games: HashMap<ActorId, String>,// 存储用户游戏需要猜测的单词。
 }
 
 #[no_mangle]
@@ -20,13 +20,16 @@ extern fn init() {
 
 #[no_mangle]
 extern "C" fn handle() {
-    let action: Action = msg::load().expect("Unable to decode ");
+    let msg = msg::load();
+    let action:Action = msg.expect("Unable to decode ");
     let wordle = unsafe { WORDLE.as_mut().expect("The program is not initialized") };
 
     let reply = match action {
         Action::StartGame { user } => {
             let random_id = get_random_value(BANK_OF_WORDS.len() as u8);
+            debug!("random_id is: {:?}", random_id);
             let word = BANK_OF_WORDS[random_id as usize];
+            debug!("word is: {:?}", word);
             wordle.games.insert(user, word.to_string());
             Event::GameStarted { user}
         }
@@ -55,7 +58,6 @@ extern "C" fn handle() {
             }
         }
     };
-
     msg::reply(reply, 0).expect("Error in sending a reply");
 }
 

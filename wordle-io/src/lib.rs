@@ -16,10 +16,10 @@ impl Metadata for WordleMetadata {
     ///
     /// Here the [`PingPong`] type is used for both incoming and outgoing messages.
     type Handle = InOut<Action, Event>;
-    /// Types for miscellaneous scenarios.
-    type Others = ();
     /// The input type for the `handle_reply()` entry point.
     type Reply = ();
+    /// Types for miscellaneous scenarios.
+    type Others = ();
     /// The output type for the `handle_signal()` entry point.
     type Signal = ();
     /// I/O types for the `state()` entry point.
@@ -31,7 +31,7 @@ impl Metadata for WordleMetadata {
 
 pub type State = Vec<(ActorId, u128)>;
 
-#[derive(Encode, Decode, TypeInfo,Clone)]
+#[derive(Encode, Decode, TypeInfo,Clone,Debug)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]pub enum Action {
     StartGame {
@@ -44,7 +44,7 @@ pub type State = Vec<(ActorId, u128)>;
 }
 
 
-#[derive(Encode, Decode, TypeInfo,Clone)]
+#[derive(Encode, Decode, TypeInfo, Clone, Debug)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
 pub enum Event {
