@@ -44,11 +44,13 @@ extern "C" fn handle() {
             let mut matched_indices = Vec::with_capacity(5);
             let mut key_indices = Vec::with_capacity(5);
             for (i, (a, b)) in key_word.chars().zip(word.chars()).enumerate() {
+                debug!("a and b is:{},{}",a,b);
                 if a == b {
                     matched_indices.push(i as u8);
                 } else if key_word.contains(b) {
                     key_indices.push(i as u8);
                 }
+                debug!("matched_indices is:{:?}",matched_indices);
             }
 
             Event::WordChecked {
@@ -65,9 +67,15 @@ static mut SEED: u8 = 0;
 
 pub fn get_random_value(range: u8) -> u8 {
     let seed = unsafe { SEED };
-    unsafe { SEED = SEED.wrapping_add(1) };
+    unsafe {
+        SEED = SEED.wrapping_add(1);
+        debug!("SEED is:{}",SEED);
+    };
+
     let mut random_input: [u8; 32] = exec::program_id().into();
     random_input[0] = random_input[0].wrapping_add(seed);
+    debug!("random_input is:{:?}",random_input);
     let (random, _) = exec::random(random_input).expect("Error in getting random number");
+    debug!("random[0] is:{}",random[0]);
     random[0] % range
 }
