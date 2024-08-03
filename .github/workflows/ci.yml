@@ -25,7 +25,7 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
 
-      - name: Check and test
+      - name: Check and tests
         run: |
           cargo fmt --all --check
           cargo clippy --all-targets -- -D warnings -A unused-imports
