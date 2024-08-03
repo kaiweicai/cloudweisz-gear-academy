@@ -27,9 +27,9 @@ extern "C" fn handle() {
     let reply = match action {
         Action::StartGame { user } => {
             let random_id = get_random_value(BANK_OF_WORDS.len() as u8);
-            debug!("random_id is: {:?}", random_id);
+            // debug!("random_id is: {:?}", random_id);
             let word = BANK_OF_WORDS[random_id as usize];
-            debug!("word is: {:?}", word);
+            // debug!("word is: {:?}", word);
             wordle.games.insert(user, word.to_string());
             Event::GameStarted { user}
         }
@@ -44,13 +44,13 @@ extern "C" fn handle() {
             let mut matched_indices = Vec::with_capacity(5);
             let mut key_indices = Vec::with_capacity(5);
             for (i, (a, b)) in key_word.chars().zip(word.chars()).enumerate() {
-                debug!("a and b is:{},{}",a,b);
+                // debug!("a and b is:{},{}",a,b);
                 if a == b {
                     matched_indices.push(i as u8);
                 } else if key_word.contains(b) {
                     key_indices.push(i as u8);
                 }
-                debug!("matched_indices is:{:?}",matched_indices);
+                // debug!("matched_indices is:{:?}",matched_indices);
             }
 
             Event::WordChecked {

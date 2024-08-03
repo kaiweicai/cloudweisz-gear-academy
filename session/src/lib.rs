@@ -1,8 +1,10 @@
 #![no_std]
 
-use gstd::{collections::HashMap, msg, prelude::*, ActorId, exec, MessageId};
+use gstd::{collections::HashMap, msg, prelude::*, ActorId, exec, MessageId, debug};
+use gstd::ext::debug;
 use session_io::*;
 
+const WORD_LENGTH:usize = 5;
 pub struct Session {
     wordle: ActorId,
     player_game_status:HashMap<ActorId, GameStatus>,
@@ -12,7 +14,7 @@ pub struct Session {
     max_play_times:u32,
 }
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub enum GameStatus {
     StartGameIdle,
     CheckWordIdle,
@@ -55,84 +57,83 @@ pub extern "C" fn init() {
 extern fn handle() {
     let user_id = msg::source();
     let session = unsafe {SESSION.as_mut().expect("State isn't initialized")};
-    let msg_status = session.player_game_status.get(&msg::source()).unwrap_or(&GameStatus::StartGameIdle);
-    match msg_status{
-        GameStatus::StartGameIdle => {
-            let user_action:Action = msg::load().expect("Failed to load payload");
-            match user_action {
-                Action::StartGame{user} => {
-                    let send_msg_id = msg::send(session.wordle, user_action, 0).expect("Failed to send");
-                    let origin_id = msg::id();
-                    session.player_message_id.insert(send_msg_id,user_id);
-                    session.player_game_status.insert(user_id, GameStatus::StartGameMessageSend {
-                        origin_id ,send_id:send_msg_id});
-                    exec::wait();
-                },
-                _ => {
-                    panic!("Invalid action");
-                }
-            }
-        }
-        GameStatus::CheckWordIdle => {
-            let user_action:Action = msg::load().expect("Failed to load payload");
-            match user_action.clone() {
-                Action::CheckWord{user,word} =>{
-                    //检查word不超过六个数字
-                    assert_eq!(word.capacity(), 6, "The length of the word exceeds 6");
-                    session.player_times.entry(user_id).or_insert_with(Vec::<String>::new).push(word);
-                    let send_msg_id = msg::send(session.wordle, user_action, 0).expect("Failed to send");
-                    session.player_message_id.insert(send_msg_id,user_id);
-                    session.player_game_status.insert(user_id, GameStatus::CheckWordMessageSend {
-                        origin_id:msg::id() ,send_id:send_msg_id});
-                    exec::wait();
-                }
-                _=>{
-                    panic!("Invalid action");
-                }
-            }
+    let msg_id = msg::id();
 
+    let action = session.player_game_status.get(&user_id);
+
+    debug!("session.player_game_status.get(&msg::source()) is:{:?}",session.player_game_status.get(&user_id));
+    if action.is_none(){
+        let user_action:Action = msg::load().expect("Failed to load payload");
+        match user_action.clone() {
+            Action::StartGame { user } => {
+                let send_msg_id = msg::send(session.wordle, user_action, 0).expect("Failed to send");
+                let origin_id = msg::id();
+                session.player_message_id.insert(origin_id, user_id);
+                session.player_game_status.insert(user_id, GameStatus::StartGameMessageSend {
+                    origin_id,
+                    send_id: send_msg_id
+                });
+                debug!("origin_id is:{:?}",origin_id);
+                debug!("session.player_message_id is:{:?}",&session.player_message_id);
+                exec::wait();
+            },
+
+            Action::CheckWord { user, word } => {
+                //检查word不超过六个数字
+                debug!("word.capacity() is:{}",word.capacity());
+                assert_eq!(word.capacity(), WORD_LENGTH, "The length of the word exceeds 6");
+                session.player_times.entry(user_id).or_insert_with(Vec::<String>::new).push(word);
+                let send_msg_id = msg::send(session.wordle, user_action, 0).expect("Failed to send");
+                debug!("start check word send_msg_id is:{:?}",send_msg_id);
+                let origin_id = msg::id();
+                session.player_message_id.insert(origin_id, user_id);
+                session.player_game_status.insert(user_id, GameStatus::CheckWordMessageSend {
+                    origin_id,
+                    send_id: send_msg_id
+                });
+                exec::wait();
+            },
         }
-        GameStatus::StartGameMessageReceived {event} => {
-            // 获取用户id
-            let user_id = session.player_message_id.get(&msg::id()).expect("Failed to get id");
-            let game_status =session.player_game_status.get(user_id).expect("Failed to get status");
-            match game_status {
-                GameStatus::StartGameMessageReceived {event} => {
-                    msg::reply(event,0).expect("Failed to reply");
-                }
-                _ => {panic!("Invalid status");}
+    }else{
+        let msg_status = action.expect("player status is empty").clone();
+        debug!("received msg_status is:{:?}",msg_status);
+        match msg_status{
+            GameStatus::StartGameMessageReceived {event} => {
+                // 获取用户id
+                let game_status = action.expect("Failed to get status");
+                debug!("received game_status is:{:?}",game_status);
+                msg::reply(event,0).expect("Failed to reply");
+                session.player_game_status.remove(&user_id);
             }
-        }
-        GameStatus::CheckWordMessageReceived{event} => {
-            // 获取用户id
-            let user_id = session.player_message_id.get(&msg::id()).expect("Failed to get id");
-            let game_status =session.player_game_status.get(user_id).expect("Failed to get status").clone();
-            match game_status {
-                GameStatus::CheckWordMessageReceived {event} => {
-                    //检查用户是否结束了游戏
-                    match event.clone() {
-                        Event::WordChecked{ user,
+            GameStatus::CheckWordMessageReceived{event} => {
+
+                debug!("received check word message id is:{:?}",msg_id);
+                // 获取用户id
+                debug!("received checked user id is :{:?}",user_id);
+                let game_status = action.expect("Failed to get status").clone();
+                debug!("check word game_status is:{:?}",game_status);
+                debug!("check word event is:{:?}",event);
+                //清空用户的状态
+                session.player_game_status.remove(&user_id);
+                session.player_message_id.remove(&msg_id);
+                session.player_times.remove(&user_id);
+                //检查用户是否结束了游戏
+                match event.clone() {
+                    Event::WordChecked{ user,
                         correct_positions,
                         contained_in_word,} => {
-                            if !correct_positions.contains(&0)||session.player_times.get(user_id).unwrap().len() as u32==session.max_play_times{//游戏结束
-                                msg::reply(Event::UserWin {user},0).expect("Failed to reply");
-                                //清空用户的状态
-                                session.player_game_status.remove(&user);
-                                let origin_id = msg::id();
-                                session.player_message_id.remove(&origin_id);
-                                session.player_times.remove(&user);
-                                return;
-                            }
+                        if !correct_positions.contains(&0)||session.player_times.get(&user_id).unwrap().len() as u32==session.max_play_times{//游戏结束
+                            msg::reply(Event::UserWin {user},0).expect("Failed to reply");
+                            return;
                         }
-                        _ => {}
                     }
-                    msg::reply(event,0).expect("Failed to reply");
+                    _ => {}
                 }
-                _ => {panic!("Invalid status");}
+                msg::reply(event,0).expect("Failed to reply");
             }
-        }
-        _=> {
-            panic!("Invalid status");
+            _=> {
+                panic!("Invalid status");
+            }
         }
     }
 }
@@ -142,12 +143,14 @@ extern fn handle_reply() {
     let reply:Event = msg::load().expect("Failed to load payload");
     let session = unsafe {SESSION.as_mut().expect("State isn't initialized")};
     let reply_to = msg::reply_to().expect("Failed to get reply_to");
+    debug!("handle reply_to is:{:?}",reply_to);
     match reply {
         Event::GameStarted { user } => {
             let msg_status = session.player_game_status.get(&user).expect("Failed to get status").clone();
+            debug!("msg_status reply is:{:?}",msg_status);
             match msg_status {
                 GameStatus::StartGameMessageSend {origin_id,send_id} => {
-                    if reply_to == origin_id {
+                    if reply_to == send_id {
                         session.player_game_status.insert(user, GameStatus::StartGameMessageReceived{event:reply});
                         exec::wake(origin_id).expect("Failed to wake");
                     }
@@ -159,10 +162,12 @@ extern fn handle_reply() {
         Event::WordChecked { user, .. } => {
             let player_game_status = &mut session.player_game_status;
             let game_status = player_game_status.get(&user).expect("Failed to get status").clone();
+            debug!("reply word game_status is:{:?}",game_status);
             match game_status {
                 GameStatus::CheckWordMessageSend {origin_id,send_id} => {
-                    if reply_to == origin_id {
+                    if reply_to == send_id {
                         player_game_status.insert(user, GameStatus::CheckWordMessageReceived{event:reply});
+                        debug!("reply word player_game_status is:{:?}",player_game_status);
                         exec::wake(origin_id).expect("Failed to wake");
                     }
 
