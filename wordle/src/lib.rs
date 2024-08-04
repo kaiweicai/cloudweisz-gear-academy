@@ -22,6 +22,7 @@ extern fn init() {
 extern "C" fn handle() {
     let msg = msg::load();
     let action:Action = msg.expect("Unable to decode ");
+    debug!("wordle action is: {:?}", action);
     let wordle = unsafe { WORDLE.as_mut().expect("The program is not initialized") };
 
     let reply = match action {
@@ -34,9 +35,7 @@ extern "C" fn handle() {
             Event::GameStarted { user}
         }
         Action::CheckWord { user, word } => {
-            if word.len() != 5 {
-                panic!("The length of the word exceeds 5");
-            }
+            debug!("word is: {:?}", word);
             let key_word = wordle
                 .games
                 .get(&user)

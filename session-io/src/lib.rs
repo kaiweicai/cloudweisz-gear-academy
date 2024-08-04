@@ -40,7 +40,7 @@ pub struct GameSessionInit{
     pub max_play_times:u32
 }
 
-#[derive(Encode, Decode, TypeInfo,Clone)]
+#[derive(Encode, Decode, TypeInfo,Clone,Debug)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
 pub enum Action {
