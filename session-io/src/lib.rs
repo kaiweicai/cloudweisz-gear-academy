@@ -15,7 +15,7 @@ impl Metadata for SessionMetadata {
     /// I/O types for the `handle()` entry point.
     ///
     /// Here the [`PingPong`] type is used for both incoming and outgoing messages.
-    type Handle = InOut<Action, Event>;
+    type Handle = InOut<Action, SessionEvent>;
     /// The input type for the `handle_reply()` entry point.
     type Reply = ();
     /// Types for miscellaneous scenarios.
@@ -57,14 +57,14 @@ pub enum Action {
 #[derive(Encode, Decode, TypeInfo,Clone,Debug)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
-pub enum Event {
+pub enum SessionEvent {
     GameStarted {
         user: ActorId,
     },
     WordChecked {
         user: ActorId,
-        correct_positions: Vec<u8>,
-        contained_in_word: Vec<u8>,
+        correct_positions: String,
+        contained_in_word: String,
     },
     UserWin{
         user:ActorId

@@ -5058,6 +5058,7 @@ dependencies = [
  "gtest",
  "session-io",
  "tokio",
+ "wordle-io",
 ]
 
 [[package]]
