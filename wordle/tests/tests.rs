@@ -10,7 +10,7 @@ fn test_start_game() {
 
     let program = Program::current_opt(&system);
 
-    let mut result = program.send_bytes(2, []);
+    let result = program.send_bytes(2, []);
 
     assert!(!result.main_failed(), "Program failed: {:?}", result);
 
@@ -32,7 +32,7 @@ fn test_wordle_game_success() {
 
     let program = Program::current_opt(&system);
 
-    let mut result = program.send_bytes(2, []);
+    let result = program.send_bytes(2, []);
 
     assert!(!result.main_failed(), "Program failed: {:?}", result);
 
@@ -79,7 +79,7 @@ fn test_wordle_game_more_times() {
 
     let program = Program::current_opt(&system);
 
-    let mut result = program.send_bytes(2, []);
+    let result = program.send_bytes(2, []);
 
     assert!(!result.main_failed(), "Program failed: {:?}", result);
 
