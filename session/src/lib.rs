@@ -1,8 +1,9 @@
 #![no_std]
 
 use gstd::{collections::HashMap, msg, prelude::*, ActorId, exec, MessageId, debug};
-use gstd::ext::debug;
 use session_io::*;
+use session_io::SessionEvent::WordChecked;
+use wordle_io::Event;
 
 const WORD_LENGTH:usize = 5;
 pub struct Session {
@@ -109,7 +110,8 @@ extern fn handle() {
                 debug!("received game_status is:{:?}",game_status);
                 session.player_game_status.remove(&user_id);
                 session.player_start_games.insert(user_id,true);
-                msg::reply(event,0).expect("Failed to reply");
+                let game_start_event = SessionEvent::GameStarted { user:user_id  };
+                msg::reply(game_start_event,0).expect("Failed to reply");
 
             }
             GameStatus::CheckWordMessageReceived{event} => {
@@ -134,10 +136,23 @@ extern fn handle() {
                             msg::reply(Event::UserWin {user},0).expect("Failed to reply");
                             return;
                         }
+                        let mut cp = "".to_string();
+                        let mut ciw = "".to_string();
+                        for c in correct_positions {
+                            cp = cp + &c.to_string()+&",";
+                        }
+                        for c in contained_in_word {
+                            ciw = ciw + &c.to_string()+&",";
+                        }
+                        let check_word_event:SessionEvent = WordChecked{
+                            user: user_id,
+                            correct_positions: cp,
+                            contained_in_word: ciw,
+                        };
+                        msg::reply(check_word_event,0).expect("Failed to reply");
                     }
                     _ => {}
                 }
-                msg::reply(event,0).expect("Failed to reply");
             }
             _=> {
                 panic!("Invalid status");

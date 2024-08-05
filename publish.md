@@ -1,1 +1,4 @@
-0xbe63d3a4835dc81ebef545cc893ea3e635bd6f4c2515a7db275f3980ee9ad90b
+https://github.com/kaiweicai/cloudweisz-gear-academy
+
+wordle:0xa5e943590de43074a42c556624f52c209e9b9468258864f7dee8f82e1f45fbb7
+session:0x3c82fdde651c856cb6b0d97aa7021379582124a664a8bd93d4bb03ad7e5fb304

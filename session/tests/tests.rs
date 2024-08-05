@@ -1,8 +1,7 @@
 use gtest::{Log, Program, ProgramBuilder, System};
-use session::GameStatus;
 use session_io::Action::{CheckWord, StartGame};
-use session_io::Event::WordChecked;
-use session_io::{Event, GameSessionInit};
+use session_io::{GameSessionInit, SessionEvent};
+use wordle_io::Event;
 
 const GAME_SESSION_PROGRAM_ID: u64 = 1;
 const GAME_WORDLE_PROGRAM_ID: u64 = 2;
@@ -65,10 +64,10 @@ pub fn test_play_success() {
     );
     assert!(!wordle_result.main_failed(), "wordle run failed");
     assert!(
-        wordle_result.contains(&Log::builder().payload(Event::WordChecked {
+        wordle_result.contains(&Log::builder().payload(SessionEvent::WordChecked {
             user: USER.into(),
-            correct_positions: vec![0, 1, 3, 4],
-            contained_in_word: vec![]
+            correct_positions: "0,1,3,4,".to_string(),
+            contained_in_word: "".to_string(),
         }))
     );
 
@@ -82,10 +81,10 @@ pub fn test_play_success() {
 
     assert!(!success_wordle_result.main_failed(), "wordle run failed");
     assert!(
-        success_wordle_result.contains(&Log::builder().payload(Event::WordChecked {
+        success_wordle_result.contains(&Log::builder().payload(SessionEvent::WordChecked {
             user: USER.into(),
-            correct_positions: vec![0, 1, 2,3, 4],
-            contained_in_word: vec![]
+            correct_positions: "0,1,2,3,4,".to_string(),
+            contained_in_word: "".to_string(),
         }))
     );
 }
