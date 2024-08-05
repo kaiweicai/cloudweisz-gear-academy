@@ -68,7 +68,7 @@ extern fn handle() {
     if player_game_status.is_none() {
         let user_action: Action = msg::load().expect("Failed to load payload");
         match user_action.clone() {
-            Action::StartGame { user:_ } => {
+            Action::StartGame { user: _ } => {
                 let send_msg_id =
                     msg::send(session.wordle, user_action, 0).expect("Failed to send");
                 let origin_id = msg::id();
@@ -83,7 +83,7 @@ extern fn handle() {
                 exec::wait();
             }
 
-            Action::CheckWord { user:_, word } => {
+            Action::CheckWord { user: _, word } => {
                 let player_start_game = session
                     .player_start_games
                     .get(&user_id)
@@ -129,7 +129,7 @@ extern fn handle() {
         let msg_status = player_game_status.expect("player status is empty").clone();
         debug!("received msg_status is:{:?}", msg_status);
         match msg_status {
-            GameStatus::StartGameMessageReceived { event:_ } => {
+            GameStatus::StartGameMessageReceived { event: _ } => {
                 // 获取用户id
                 let game_status = player_game_status.expect("Failed to get status");
                 debug!("received game_status is:{:?}", game_status);
