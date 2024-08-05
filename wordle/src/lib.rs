@@ -1,27 +1,29 @@
 #![no_std]
 
-use gstd::{collections::HashMap, msg, prelude::*, ActorId, exec, debug};
+use gstd::{collections::HashMap, debug, exec, msg, prelude::*, ActorId};
 use wordle_io::*;
 
 static mut WORDLE: Option<Wordle> = None;
 
-const BANK_OF_WORDS:[&str;3] = ["house", "human", "horse"];
+const BANK_OF_WORDS: [&str; 3] = ["house", "human", "horse"];
 
 pub struct Wordle {
-    games: HashMap<ActorId, String>,// 存储用户游戏需要猜测的单词。
+    games: HashMap<ActorId, String>, // 存储用户游戏需要猜测的单词。
 }
 
 #[no_mangle]
 extern fn init() {
-    unsafe { WORDLE = Some(Wordle{
-        games: HashMap::new(),
-    }) }
+    unsafe {
+        WORDLE = Some(Wordle {
+            games: HashMap::new(),
+        })
+    }
 }
 
 #[no_mangle]
-extern "C" fn handle() {
+extern fn handle() {
     let msg = msg::load();
-    let action:Action = msg.expect("Unable to decode ");
+    let action: Action = msg.expect("Unable to decode ");
     debug!("wordle action is: {:?}", action);
     let wordle = unsafe { WORDLE.as_mut().expect("The program is not initialized") };
 
@@ -32,7 +34,7 @@ extern "C" fn handle() {
             let word = BANK_OF_WORDS[random_id as usize];
             // debug!("word is: {:?}", word);
             wordle.games.insert(user, word.to_string());
-            Event::GameStarted { user}
+            Event::GameStarted { user }
         }
         Action::CheckWord { user, word } => {
             debug!("word is: {:?}", word);
@@ -68,13 +70,13 @@ pub fn get_random_value(range: u8) -> u8 {
     let seed = unsafe { SEED };
     unsafe {
         SEED = SEED.wrapping_add(1);
-        debug!("SEED is:{}",SEED);
+        debug!("SEED is:{}", SEED);
     };
 
     let mut random_input: [u8; 32] = exec::program_id().into();
     random_input[0] = random_input[0].wrapping_add(seed);
-    debug!("random_input is:{:?}",random_input);
+    debug!("random_input is:{:?}", random_input);
     let (random, _) = exec::random(random_input).expect("Error in getting random number");
-    debug!("random[0] is:{}",random[0]);
+    debug!("random[0] is:{}", random[0]);
     random[0] % range
 }

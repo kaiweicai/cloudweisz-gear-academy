@@ -104,5 +104,4 @@ pub fn test_play_fail() {
         },
     );
     assert!(wordle_result.main_failed(), "wordle run failed");
-
 }

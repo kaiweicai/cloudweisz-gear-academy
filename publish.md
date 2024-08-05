@@ -1,4 +1,4 @@
 https://github.com/kaiweicai/cloudweisz-gear-academy
 
 wordle:0xa5e943590de43074a42c556624f52c209e9b9468258864f7dee8f82e1f45fbb7
-session:0x3c82fdde651c856cb6b0d97aa7021379582124a664a8bd93d4bb03ad7e5fb304
+session:0xceaf32f481cd4cfe1bc5e15e39402b91bdbc2bfb5c59f3b7f204814240fe46dc
