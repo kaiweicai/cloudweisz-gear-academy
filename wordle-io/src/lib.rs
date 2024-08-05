@@ -31,18 +31,13 @@ impl Metadata for WordleMetadata {
 
 pub type State = Vec<(ActorId, u128)>;
 
-#[derive(Encode, Decode, TypeInfo,Clone,Debug)]
+#[derive(Encode, Decode, TypeInfo, Clone, Debug)]
 #[codec(crate = gstd::codec)]
-#[scale_info(crate = gstd::scale_info)]pub enum Action {
-    StartGame {
-        user: ActorId,
-    },
-    CheckWord {
-        user: ActorId,
-        word: String,
-    }
+#[scale_info(crate = gstd::scale_info)]
+pub enum Action {
+    StartGame { user: ActorId },
+    CheckWord { user: ActorId, word: String },
 }
-
 
 #[derive(Encode, Decode, TypeInfo, Clone, Debug)]
 #[codec(crate = gstd::codec)]
@@ -56,9 +51,9 @@ pub enum Event {
         correct_positions: Vec<u8>,
         contained_in_word: Vec<u8>,
     },
-    UserWin{
-        user:ActorId
-    }
+    UserWin {
+        user: ActorId,
+    },
 }
 
 /// Queries the contract state.

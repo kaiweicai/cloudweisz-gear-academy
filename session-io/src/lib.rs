@@ -31,30 +31,23 @@ impl Metadata for SessionMetadata {
 
 pub type State = Vec<(ActorId, u128)>;
 
-
 #[derive(Encode, Decode, TypeInfo)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
-pub struct GameSessionInit{
-    pub wordle_address:ActorId,
-    pub max_play_times:u32
+pub struct GameSessionInit {
+    pub wordle_address: ActorId,
+    pub max_play_times: u32,
 }
 
-#[derive(Encode, Decode, TypeInfo,Clone,Debug)]
+#[derive(Encode, Decode, TypeInfo, Clone, Debug)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
 pub enum Action {
-    StartGame {
-        user: ActorId,
-    },
-    CheckWord {
-        user: ActorId,
-        word: String,
-    }
+    StartGame { user: ActorId },
+    CheckWord { user: ActorId, word: String },
 }
 
-
-#[derive(Encode, Decode, TypeInfo,Clone,Debug)]
+#[derive(Encode, Decode, TypeInfo, Clone, Debug)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
 pub enum SessionEvent {
@@ -66,9 +59,9 @@ pub enum SessionEvent {
         correct_positions: String,
         contained_in_word: String,
     },
-    UserWin{
-        user:ActorId
-    }
+    UserWin {
+        user: ActorId,
+    },
 }
 
 /// Queries the contract state.
