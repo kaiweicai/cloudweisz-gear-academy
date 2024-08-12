@@ -902,6 +902,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "coin-io"
+version = "0.1.0"
+dependencies = [
+ "gmeta",
+ "gstd",
+]
+
+[[package]]
 name = "colored"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1959,6 +1967,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "fungible-token-state"
+version = "0.1.0"
+dependencies = [
+ "coin-io",
+ "gear-wasm-builder",
+ "gmeta",
+ "gstd",
+]
+
+[[package]]
 name = "funty"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2558,8 +2576,20 @@ checksum = "82d4fbb3700df8abeed1753ca211be90d9ae7eba772dee1b097f2e6c0ac27871"
 dependencies = [
  "blake2",
  "derive_more",
+ "gmeta-codegen",
  "hex",
  "scale-info",
+]
+
+[[package]]
+name = "gmeta-codegen"
+version = "1.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "54280c1b89114b9b6490246e1df64dcb4d8bd1a8fabb3885e954677a439f9179"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.72",
 ]
 
 [[package]]
@@ -4308,6 +4338,19 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "pump-coin"
+version = "0.1.0"
+dependencies = [
+ "coin-io",
+ "gclient",
+ "gear-wasm-builder",
+ "gstd",
+ "gtest",
+ "session-io",
+ "tokio",
 ]
 
 [[package]]

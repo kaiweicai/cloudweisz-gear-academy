@@ -9,16 +9,17 @@ publish = false
 # It's necessary to include all metawasm crates in the workspace section, otherwise they'll be
 # ignored by Cargo and won't be built.
 [workspace]
-members = ["session","wordle"]
+members = ["session","wordle", "pump-coin","state"]
 
 [workspace.dependencies]
-gstd = "1.4.1"
-gmeta = "1.4.1"
-gear-wasm-builder = "1.4.1"
-gtest = "1.4.1"
-gclient = "1.4.1"
+gstd = "1.4.2"
+gmeta = "1.4.2"
+gear-wasm-builder = "1.4.2"
+gtest = "1.4.2"
+gclient = "1.4.2"
 wordle-io.path = "wordle-io"
 session-io.path = "session-io"
+coin-io.path = "coin-io"
 tokio = "1"
 xshell = "0.2"
 anyhow = "1"
