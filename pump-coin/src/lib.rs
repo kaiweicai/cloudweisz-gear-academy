@@ -168,7 +168,7 @@ fn static_mut_state() -> &'static mut FungibleToken {
 #[no_mangle]
 extern fn state(){
     msg::reply(common_state(), 0)
-        .expect("Failed to encode or reply with `<AppMetadata as Metadata>::State` from `state()`");
+        .expect("Failed to encode or reply with `<AppMetadata as Metadata>::State` from `coin-state()`");
 }
 
 #[no_mangle]

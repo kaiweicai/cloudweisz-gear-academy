@@ -1,5 +1,5 @@
 [package]
-name = "fungible-token-state"
+name = "coin-state"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true

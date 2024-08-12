@@ -32,8 +32,8 @@ pub enum FTAction{
     Burn(u128),
     Transfer{from:ActorId,to:ActorId,amount:u128},
     Approve{to:ActorId,amount:u128},
-    TotalSupply,    //? is not a state query?
-    BalanceOf(ActorId), //? is not a state query?
+    TotalSupply,    //? is not a coin-state query?
+    BalanceOf(ActorId), //? is not a coin-state query?
 }
 
 #[derive(Debug, Encode, Decode, TypeInfo)]

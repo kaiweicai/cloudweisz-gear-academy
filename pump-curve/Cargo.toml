@@ -1,0 +1,19 @@
+[package]
+name = "pump-curve"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+gstd.workspace = true
+session-io.workspace = true
+curve-io.workspace = true
+
+[build-dependencies]
+gear-wasm-builder.workspace = true
+curve-io.workspace = true
+
+[dev-dependencies]
+gtest.workspace = true
+gclient.workspace = true
+tokio.workspace = true

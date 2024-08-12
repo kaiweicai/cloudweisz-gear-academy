@@ -22,7 +22,7 @@ impl Metadata for WordleMetadata {
     type Others = ();
     /// The output type for the `handle_signal()` entry point.
     type Signal = ();
-    /// I/O types for the `state()` entry point.
+    /// I/O types for the `coin-state()` entry point.
     ///
     /// You can also specify just an output ([`Out`]) or input ([`In`](gmeta::In)) type, if both
     /// ([`InOut`]) are expected like here.
@@ -56,9 +56,9 @@ pub enum Event {
     },
 }
 
-/// Queries the contract state.
+/// Queries the contract coin-state.
 ///
-/// Used in the `state` crate.
+/// Used in the `coin-state` crate.
 #[derive(Encode, Decode, TypeInfo)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
@@ -75,7 +75,7 @@ pub enum StateQuery {
 
 /// The result of successfully processed [`StateQuery`].
 ///
-/// Used in the `state` crate.
+/// Used in the `coin-state` crate.
 #[derive(Encode, Decode, TypeInfo, PartialEq, Eq, Debug)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
