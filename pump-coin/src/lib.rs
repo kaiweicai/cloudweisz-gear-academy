@@ -7,8 +7,8 @@ use gstd::{ActorId, debug,  msg};
 use gstd::{prelude::{String,Encode,Decode,TypeInfo},collections::HashMap};
 use coin_io::{FTAction, FTEvent, InitConfig, IoToken};
 
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod tests;
 const ZERO_ID:ActorId = ActorId::new([0;32]);
 
 #[derive(Debug, Clone, Default)]
