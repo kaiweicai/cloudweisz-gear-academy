@@ -4352,6 +4352,7 @@ dependencies = [
 name = "pump-curve"
 version = "0.1.0"
 dependencies = [
+ "coin-io",
  "curve-io",
  "gclient",
  "gear-wasm-builder",
