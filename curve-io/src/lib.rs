@@ -45,6 +45,6 @@ pub enum FTAction{
     Buy{
         symbol:String,
         expect_token_output_amount:u128,
-
+        coin_address:ActorId,
     }
 }

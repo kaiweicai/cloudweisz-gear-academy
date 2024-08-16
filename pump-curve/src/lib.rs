@@ -16,18 +16,22 @@ pub struct Configurator {
 }
 
 impl Configurator {
-    pub fn get_token_output_amount(&self,sui_exchange_amount:u128,symbol:String)->u128{
-        let native_coin_amount = self.pop_coin.get(&symbol).unwrap().native_coin_amount;
-        let base_sui_coin_amount = self.get_base_sui_coin(symbol);
-        let coin_reverse = native_coin_amount;
-        sui_exchange_amount * coin_reverse / (base_sui_coin_amount + sui_exchange_amount)
+    pub fn get_token_output_amount(&self, input_amount: u128, symbol: &str) -> u128 {
+        let coin_amount = self.pop_coin.get(symbol).unwrap().coin_amount;
+        let native_coin_amount = self.get_virtual_base_coin(symbol);
+        let coin_reverse = coin_amount;
+        input_amount * coin_reverse / (native_coin_amount + input_amount)
     }
 
-    pub fn get_base_sui_coin(&self,symbol:String)->u128{
-        let native_coin_amount = self.pop_coin.get(&symbol).unwrap().native_coin_amount;
-        native_coin_amount+self.virtual_sui_amt
+    pub fn get_virtual_base_coin(&self, symbol: &str) -> u128 {
+        let native_amount = self.pop_coin.get(symbol).unwrap().native_amount;
+        native_amount + self.virtual_sui_amt
     }
 
+    pub fn get_reserves(&self,symbol: &str)->(u128,u128){
+        let pop_coin = self.pop_coin.get(symbol).expect("coin not exist");
+        (pop_coin.coin_amount,pop_coin.native_amount)
+    }
 }
 
 pub struct BondingCurve {
@@ -39,7 +43,8 @@ pub struct BondingCurve {
     website: String,
     // target_supply_threshold:u64, //depracate
     migration_target: u128,
-    native_coin_amount: u128,
+    coin_amount: u128,
+    native_amount: u128,
 }
 
 static mut PUMP_CURVE: Option<Configurator> = None;
@@ -106,14 +111,15 @@ extern fn handle() {
                 telegram,
                 website,
                 migration_target: migrate_price,
-                native_coin_amount: 0,
+                coin_amount: 0,
+                native_amount: 0,
             };
             pump_curve.pop_coin.insert(twitter, bound_curve);
         }
         FTAction::Buy {
             symbol,
-
-            expect_token_output_amount: u128,
+            coin_address,
+            expect_token_output_amount,
         } => {
             let bounding_curve = pump_curve
                 .pop_coin
@@ -121,9 +127,28 @@ extern fn handle() {
                 .expect("symbol is not exist");
 
             // take fee
-            let pay_amount_value = msg::value();
-
-
+            let input_amount = msg::value();
+            let token_output_amount = pump_curve.get_token_output_amount(input_amount, &symbol);
+            assert!(
+                token_output_amount >= expect_token_output_amount,
+                "expect less than min output "
+            );
+            pump_curve.pop_coin.entry(symbol).and_modify(|curve| {
+                curve.native_amount += input_amount;
+                curve.coin_amount -= token_output_amount;
+            });
+            // 转账给用户。此处可能转账失败。因为没有授权
+            let fund_manager = pump_curve.fund_manager;
+            msg::send(
+                coin_address,
+                coin_io::FTAction::Transfer {
+                    from: fund_manager,
+                    to: msg::source(),
+                    amount: token_output_amount,
+                },
+                0,
+            );
+            //检查是否被买空
 
         }
     }
