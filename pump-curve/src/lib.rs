@@ -1,36 +1,36 @@
 #![no_std]
 
-use curve_io::{FTAction, InitConfig};
+use curve_io::{CurveEvent, FTAction, InitConfig};
 use gstd::{collections::HashMap, msg, prelude::*, ActorId};
 
 pub struct Configurator {
     virtual_sui_amt: u128,
-    target_supply_threshold: u64, // trade amount is enough to on board.
-    migration_fee: u64,
+    target_supply_threshold: u128, // trade amount is enough to on board.
+    migration_fee: u128,
     listing_fee: u128,
-    swap_fee_ratio: u64,
+    swap_fee_ratio: u128,
     total_supply_limit: u128, // limit the total supply. only fit this rules can join this curve
     pub admin: ActorId,
     pub fund_manager: ActorId,
     pop_coin: HashMap<String, BondingCurve>,
 }
 
-impl Configurator {
-    pub fn get_token_output_amount(&self, input_amount: u128, symbol: &str) -> u128 {
-        let coin_amount = self.pop_coin.get(symbol).unwrap().coin_amount;
-        let native_coin_amount = self.get_virtual_base_coin(symbol);
+
+impl BondingCurve {
+    pub fn get_token_output_amount(&self, input_amount: u128,virtual_sui_amt:u128) -> u128 {
+        let coin_amount = self.coin_amount;
+        let native_coin_amount = self.get_virtual_base_coin(virtual_sui_amt);
         let coin_reverse = coin_amount;
         input_amount * coin_reverse / (native_coin_amount + input_amount)
     }
 
-    pub fn get_virtual_base_coin(&self, symbol: &str) -> u128 {
-        let native_amount = self.pop_coin.get(symbol).unwrap().native_amount;
-        native_amount + self.virtual_sui_amt
+    pub fn get_virtual_base_coin(&self,virtual_sui_amt:u128) -> u128 {
+        let native_amount = self.native_amount;
+        native_amount + virtual_sui_amt
     }
 
-    pub fn get_reserves(&self,symbol: &str)->(u128,u128){
-        let pop_coin = self.pop_coin.get(symbol).expect("coin not exist");
-        (pop_coin.coin_amount,pop_coin.native_amount)
+    pub fn get_reserves(&self)->(u128,u128){
+        (self.coin_amount,self.native_amount)
     }
 }
 
@@ -123,20 +123,20 @@ extern fn handle() {
         } => {
             let bounding_curve = pump_curve
                 .pop_coin
-                .get(&symbol)
+                .get_mut(&symbol)
                 .expect("symbol is not exist");
-
+            // 检查curve是否有效
+            assert!(bounding_curve.is_active, "curve is not active");
             // take fee
             let input_amount = msg::value();
-            let token_output_amount = pump_curve.get_token_output_amount(input_amount, &symbol);
+            let virtual_sui_amt = pump_curve.virtual_sui_amt;
+            let token_output_amount = bounding_curve.get_token_output_amount(input_amount,virtual_sui_amt);
             assert!(
                 token_output_amount >= expect_token_output_amount,
                 "expect less than min output "
             );
-            pump_curve.pop_coin.entry(symbol).and_modify(|curve| {
-                curve.native_amount += input_amount;
-                curve.coin_amount -= token_output_amount;
-            });
+            bounding_curve.native_amount += input_amount;
+            bounding_curve.coin_amount -= token_output_amount;
             // 转账给用户。此处可能转账失败。因为没有授权
             let fund_manager = pump_curve.fund_manager;
             msg::send(
@@ -149,7 +149,23 @@ extern fn handle() {
                 0,
             );
             //检查是否被买空
+            let (coin_amount, native_amount) = bounding_curve.get_reserves();
+            assert!(coin_amount>=0&&native_amount>=0,"coin or native amount not enough");
+            // 判断是否达到上架标准
+            if coin_amount <= pump_curve.target_supply_threshold {
+                let bounding_curve = pump_curve
+                    .pop_coin
+                    .get_mut(&symbol)
+                    .expect("symbol is not exist");
+                bounding_curve.is_active = false;
+                // TODO 可以上架进行交易
+                msg::reply(CurveEvent::MigrationPendingEvent {
+                    symbol,
+                    sui_reserve_val: native_amount,
+                    token_reserve_val: coin_amount,
+                },0);
 
+            }
         }
     }
 }
