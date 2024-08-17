@@ -58,4 +58,12 @@ pub enum CurveEvent{
         sui_reserve_val   : u128,
         token_reserve_val : u128,
     },
+    SwapEvent{
+        is_buy            : bool,
+        input_amount      : u128,
+        output_amount     : u128,
+        native_reserve_val: u128,
+        token_reserve_val : u128,
+        sender            : ActorId,
+    }
 }

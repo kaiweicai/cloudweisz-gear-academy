@@ -166,6 +166,14 @@ extern fn handle() {
                 },0);
 
             }
+            msg::reply(curve_io::CurveEvent::SwapEvent {
+                is_buy: true,
+                input_amount,
+                output_amount: token_output_amount,
+                native_reserve_val: native_amount,
+                token_reserve_val: coin_amount,
+                sender: msg::source(),
+            },0);
         }
     }
 }
