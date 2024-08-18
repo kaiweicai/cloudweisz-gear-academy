@@ -17,6 +17,12 @@ pub struct Configurator {
 
 
 impl BondingCurve {
+
+    pub fn get_native_output_amount(&self, input_amount: u128, virtual_sui_amt:u128) -> u128 {
+        let native_coin_amount = self.get_virtual_base_coin(virtual_sui_amt);
+        let coin_reverse = self.coin_amount;
+        input_amount * native_coin_amount/(coin_reverse+input_amount)
+    }
     pub fn get_token_output_amount(&self, input_amount: u128,virtual_sui_amt:u128) -> u128 {
         let coin_amount = self.coin_amount;
         let native_coin_amount = self.get_virtual_base_coin(virtual_sui_amt);
@@ -115,7 +121,7 @@ extern fn handle() {
                 native_amount: 0,
             };
             pump_curve.pop_coin.insert(twitter, bound_curve);
-        }
+        },
         FTAction::Buy {
             symbol,
             coin_address,
@@ -159,14 +165,14 @@ extern fn handle() {
                     .expect("symbol is not exist");
                 bounding_curve.is_active = false;
                 // TODO 可以上架进行交易
-                msg::reply(CurveEvent::MigrationPendingEvent {
+                let _migration_result = msg::reply(CurveEvent::MigrationPendingEvent {
                     symbol,
                     sui_reserve_val: native_amount,
                     token_reserve_val: coin_amount,
                 },0);
 
             }
-            msg::reply(curve_io::CurveEvent::SwapEvent {
+            let _swap_event_result = msg::reply(curve_io::CurveEvent::SwapEvent {
                 is_buy: true,
                 input_amount,
                 output_amount: token_output_amount,
@@ -174,6 +180,44 @@ extern fn handle() {
                 token_reserve_val: coin_amount,
                 sender: msg::source(),
             },0);
+        },
+        FTAction::Sell {
+            symbol,
+            coin_address,
+            coin_input_amount,
+            expect_token_output_amount,
+        } =>{
+            let bounding_curve = pump_curve
+                .pop_coin
+                .get_mut(&symbol)
+                .expect("symbol is not exist");
+            // 检查curve是否有效
+            assert!(bounding_curve.is_active, "curve is not active");
+            let fund_manager = pump_curve.fund_manager;
+            //收取token费用
+            let transfer_result = msg::send(coin_address,coin_io::FTAction::Transfer {
+                from: msg::source(),
+                to: fund_manager,
+                amount: coin_input_amount,
+            },0);
+            if(transfer_result.is_err()){
+                panic!("trasfer_result error!");
+            }
+            let virtual_sui_amt = pump_curve.virtual_sui_amt;
+            let native_output_amount = bounding_curve.get_native_output_amount(coin_input_amount,virtual_sui_amt);
+            assert!(native_output_amount >= expect_token_output_amount,"not expect token amount");
+            bounding_curve.coin_amount += coin_input_amount;
+            bounding_curve.native_amount -= native_output_amount;
+            let (coin_amount,native_amount) = bounding_curve.get_reserves();
+            assert!(coin_amount > 0 && native_amount > 0, "reserve not enough");
+            let _swap_event_result = msg::reply(curve_io::CurveEvent::SwapEvent {
+                is_buy: true,
+                input_amount:coin_input_amount,
+                output_amount: native_output_amount,
+                native_reserve_val: native_amount,
+                token_reserve_val: coin_amount,
+                sender: msg::source(),
+            },native_output_amount);
         }
     }
 }

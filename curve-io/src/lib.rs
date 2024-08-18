@@ -46,6 +46,12 @@ pub enum FTAction{
         symbol:String,
         expect_token_output_amount:u128,
         coin_address:ActorId,
+    },
+    Sell{
+        symbol:String,
+        coin_address:ActorId,
+        coin_input_amount:u128,
+        expect_token_output_amount:u128,
     }
 }
 
